@@ -375,24 +375,6 @@ footer{max-width:1280px;margin:0 auto;padding:0 28px 40px;font-size:11.5px;color
       </svg>
       <span>Iniciar sesión con Google</span>
     </button>
-
-    <div class="auth-footer-notes">
-      Ingresá con tu cuenta autorizada (<code>fmunoz@riocuarto.gov.ar</code>, <code>datos@riocuarto.gov.ar</code> o <code>cleriocuarto@gmail.com</code>).
-    </div>
-
-    <button id="btnToggleConfig" class="btn-config-link" type="button">⚙ Configuración de Auth0</button>
-    <div id="authConfigBox" class="auth-config-box" style="display:none;">
-      <div class="cfg-field">
-        <label>Auth0 Domain</label>
-        <input type="text" id="cfgDomain" placeholder="ej: dev-xxxx.us.auth0.com">
-      </div>
-      <div class="cfg-field">
-        <label>Auth0 Client ID</label>
-        <input type="text" id="cfgClientId" placeholder="ej: abc123xyz...">
-      </div>
-      <button id="btnSaveConfig" class="btn-save-cfg" type="button">Guardar credenciales</button>
-      <div id="cfgSavedMsg" style="display:none;color:var(--verde);font-size:11.5px;margin-top:6px;font-weight:600;">✓ Configuración guardada. Recargando…</div>
-    </div>
   </div>
 </div>
 
@@ -404,10 +386,10 @@ footer{max-width:1280px;margin:0 auto;padding:0 28px 40px;font-size:11.5px;color
     <p class="auth-sub" id="unauthorizedUserEmail" style="font-weight:700;color:var(--negro);"></p>
     
     <div class="auth-alert-danger">
-      Esta cuenta de Google no se encuentra en la lista blanca de usuarios autorizados para acceder al tablero.
+      Esta cuenta de Google no se encuentra en la lista de usuarios autorizados para acceder al tablero.
     </div>
 
-    <p class="auth-contact-help">Cuentas permitidas: <b>fmunoz@riocuarto.gov.ar</b>, <b>datos@riocuarto.gov.ar</b> y <b>cleriocuarto@gmail.com</b>. Si necesitas acceso institucional, contactate con la Coordinación Local de Educación.</p>
+    <p class="auth-contact-help">Si necesitas acceso institucional, contactate con la Coordinación Local de Educación.</p>
 
     <button id="btnLogoutUnauthorized" class="btn-secondary-logout" type="button">
       Cerrar sesión / Probar con otra cuenta

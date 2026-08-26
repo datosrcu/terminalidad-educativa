@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Terminalidad — Sexto Año Previas</title>
+<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js"></script>
+<style>
+:root{
+  --celeste:#009DE0; --celeste-d:#0079ac; --naranja:#F27C00; --naranja-d:#a34600;
+  --verde:#00A857; --amarillo:#B88300;
+  --negro:#0a0a0a; --gris-bg:#f4f6f8; --gris-line:#e3e8ec; --gris-txt:#5a6670;
+  --card-bg:#ffffff; --r:14px;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--gris-bg);color:var(--negro);font-family:Inter,-apple-system,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+h1,h2,h3{font-weight:800;letter-spacing:-.02em;margin:0;}
+.topbar{background:var(--celeste);color:#fff;padding:10px 28px;font-weight:700;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;}
+.titlestrip{background:var(--negro);color:#fff;padding:28px 28px 24px;}
+.titlestrip h1{font-size:26px;color:#fff;}
+.titlestrip h1 .accent{color:var(--celeste);}
+.titlestrip p{margin:8px 0 0;color:#f2a35c;font-weight:700;font-size:13px;letter-spacing:.02em;text-transform:uppercase;}
+.titlestrip .desc{margin-top:10px;color:#c7ced4;font-weight:400;text-transform:none;letter-spacing:0;font-size:13.5px;max-width:820px;line-height:1.5;}
+main{max-width:1280px;margin:0 auto;padding:24px 28px 60px;}
+
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.kpi{background:var(--card-bg);border:1px solid var(--gris-line);border-radius:var(--r);padding:16px 18px;}
+.kpi .label{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-txt);}
+.kpi .value{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:4px;}
+.kpi .sub{font-size:12px;color:var(--gris-txt);margin-top:2px;}
+
+.panel{background:var(--card-bg);border:1px solid var(--gris-line);border-radius:var(--r);padding:20px 22px;margin-bottom:20px;}
+.panel h2{font-size:15px;margin-bottom:2px;}
+.panel .panel-sub{font-size:12.5px;color:var(--gris-txt);margin-bottom:14px;}
+.charts{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;align-items:start;}
+@media (max-width:980px){.charts{grid-template-columns:1fr;} .kpis{grid-template-columns:repeat(2,1fr);}}
+
+.bar-row{display:grid;grid-template-columns:190px 1fr 36px 18px;align-items:center;gap:10px;padding:5px 0;cursor:pointer;border-radius:8px;}
+.bar-row:hover{background:var(--gris-bg);}
+.bar-row .name{font-size:12.5px;color:var(--negro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{background:var(--gris-bg);border-radius:6px;height:16px;overflow:hidden;display:flex;}
+.bar-fill{height:100%;}
+.bar-row .count{font-size:12.5px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--gris-txt);}
+.bar-row .chev{font-size:11px;color:var(--gris-txt);transition:transform .15s;}
+.bar-row.open .chev{transform:rotate(90deg);}
+.legend{display:flex;gap:18px;margin-bottom:12px;font-size:12px;color:var(--gris-txt);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.swatch{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+.hist{display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:10px;}
+.hist-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+.hist-bar{width:100%;max-width:34px;border-radius:4px 4px 0 0;position:relative;}
+.hist-bar .val{position:absolute;top:-18px;left:0;right:0;text-align:center;font-size:11px;font-weight:700;color:var(--negro);}
+.hist-col .xlabel{margin-top:6px;font-size:11px;color:var(--gris-txt);font-variant-numeric:tabular-nums;}
+
+.chk-cell{text-align:center;}
+.insc-check{width:17px;height:17px;cursor:pointer;accent-color:var(--celeste);}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.filters input,.filters select{border:1px solid var(--gris-line);border-radius:9px;padding:9px 12px;font-size:13px;font-family:inherit;background:#fff;color:var(--negro);}
+.filters input{flex:1;min-width:200px;}
+.filters select{min-width:150px;}
+.count-badge{font-size:12.5px;color:var(--gris-txt);margin-left:auto;align-self:center;white-space:nowrap;}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-txt);border-bottom:2px solid var(--gris-line);padding:9px 10px;cursor:pointer;user-select:none;white-space:nowrap;}
+thead th:hover{color:var(--negro);}
+thead th.sorted::after{content:" \25BE";}
+tbody td{padding:9px 10px;border-bottom:1px solid var(--gris-line);vertical-align:middle;}
+tbody tr:not(.contact-row):hover{background:#fafbfc;}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+.rank{font-weight:800;color:var(--gris-txt);font-variant-numeric:tabular-nums;}
+.previas-chip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;padding:3px 8px;border-radius:999px;font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums;}
+.tier-alta{background:#e2f6ec;color:#0b7a45;}
+.tier-media{background:#fdf1d8;color:#8a5c00;}
+.tier-baja{background:#fbe9e5;color:#a13d18;}
+.src-chip{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;white-space:nowrap;}
+.src-confirmado{background:#e6f3fb;color:var(--celeste-d);}
+.src-estimado{background:#fff2e4;color:var(--naranja-d);border:1px dashed var(--naranja);}
+.escuela-cell{max-width:260px;}
+.escuela-cell .orient{display:block;font-size:11px;color:var(--gris-txt);}
+.empty-state{padding:30px;text-align:center;color:var(--gris-txt);font-size:13px;}
+
+.contact-btn{border:1px solid var(--celeste);background:#fff;color:var(--celeste-d);font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+.contact-btn:hover{background:#e6f3fb;}
+.contact-btn.active{background:var(--celeste);color:#fff;}
+.contact-row td{background:#f7fbfd;padding:0;}
+.contact-card{padding:16px 20px;border-left:3px solid var(--celeste);margin:8px 10px;background:#fff;border-radius:0 10px 10px 0;box-shadow:0 1px 3px rgba(10,10,10,.06);}
+.contact-card .cc-title{font-weight:800;font-size:13px;margin-bottom:8px;}
+.contact-card .cc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px 22px;font-size:12.5px;margin-bottom:10px;}
+.contact-card .cc-grid div b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--gris-txt);font-weight:700;margin-bottom:1px;}
+.contact-card a{color:var(--celeste-d);text-decoration:none;font-weight:600;}
+.contact-card a:hover{text-decoration:underline;}
+.contact-card .cc-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.cc-action{display:inline-flex;align-items:center;gap:6px;background:#e6f3fb;color:var(--celeste-d);font-size:12.5px;font-weight:700;font-family:inherit;padding:7px 12px;border-radius:8px;text-decoration:none;border:1px solid rgba(0,157,224,.3);cursor:pointer;}
+.cc-action:hover{background:#d3ecfa;}
+.cc-action.secondary{background:#fff2e4;color:var(--naranja-d);border-color:rgba(242,124,0,.35);}
+.cc-action.secondary:hover{background:#ffe4c2;}
+.cc-action.disabled{background:var(--gris-line);color:var(--gris-txt);border-color:transparent;pointer-events:none;}
+.cc-empty{font-size:12.5px;color:var(--gris-txt);font-style:italic;}
+.cc-hint{margin-top:8px;font-size:11.5px;color:var(--naranja-d);background:#fff2e4;border-radius:8px;padding:8px 10px;line-height:1.5;}
+.cc-table-label,.cc-msg-label{margin-top:12px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gris-txt);}
+.cc-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;max-width:100%;}
+.cc-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--gris-txt);border-bottom:1px solid var(--gris-line);padding:6px 8px;white-space:nowrap;}
+.cc-table td{padding:6px 8px;border-bottom:1px solid var(--gris-line);}
+.cc-table tbody tr:hover{background:var(--gris-bg);}
+.cc-table-wrap{overflow-x:auto;}
+.cc-msg{margin-top:6px;font-size:11.5px;color:var(--gris-txt);background:var(--gris-bg);border-radius:8px;padding:10px 12px;white-space:pre-wrap;line-height:1.5;font-family:"Courier New",ui-monospace,monospace;max-height:280px;overflow-y:auto;}
+
+.notes{font-size:12.5px;color:var(--gris-txt);line-height:1.7;}
+.notes b{color:var(--negro);}
+footer{max-width:1280px;margin:0 auto;padding:0 28px 40px;font-size:11.5px;color:var(--gris-txt);border-top:1px solid var(--gris-line);padding-top:16px;}
+
+/* ---- Auth Screens & Modals ---- */
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 20%, #eaf4fb 0%, #f4f6f8 70%);
+}
+.auth-card {
+  background: var(--card-bg);
+  border: 1px solid var(--gris-line);
+  border-radius: 18px;
+  box-shadow: 0 12px 36px rgba(10, 10, 10, 0.08);
+  width: 100%;
+  max-width: 440px;
+  padding: 36px 32px;
+  text-align: center;
+}
+.auth-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: #e6f3fb;
+  color: var(--celeste-d);
+  padding: 4px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.auth-badge-danger {
+  background: #fbe9e5;
+  color: #a13d18;
+}
+.auth-title {
+  font-size: 22px;
+  color: var(--negro);
+  margin-bottom: 6px;
+}
+.auth-sub {
+  font-size: 13px;
+  color: var(--gris-txt);
+  margin: 0 0 20px;
+  line-height: 1.4;
+}
+.auth-alert-info {
+  background: #f0f7fb;
+  border-left: 3px solid var(--celeste);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 12.5px;
+  color: #334155;
+  text-align: left;
+  line-height: 1.45;
+  margin-bottom: 22px;
+}
+.auth-alert-danger {
+  background: #fdf2f0;
+  border-left: 3px solid #e03131;
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 12.5px;
+  color: #7f1d1d;
+  text-align: left;
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 18px;
+  border: 1px solid var(--gris-line);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #202124;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: all .2s ease;
+}
+.btn-google:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.09);
+  transform: translateY(-1px);
+}
+.btn-google:active {
+  transform: translateY(0);
+}
+.auth-footer-notes {
+  margin-top: 20px;
+  font-size: 11.5px;
+  color: var(--gris-txt);
+  line-height: 1.45;
+}
+.auth-footer-notes code {
+  background: var(--gris-bg);
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.btn-secondary-logout {
+  width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--gris-line);
+  border-radius: 9px;
+  background: var(--gris-bg);
+  color: var(--negro);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-secondary-logout:hover {
+  background: #e3e8ec;
+}
+.auth-contact-help {
+  font-size: 12px;
+  color: var(--gris-txt);
+  margin-bottom: 20px;
+  line-height: 1.45;
+}
+
+/* Config drawer / box in login */
+.btn-config-link {
+  background: none;
+  border: none;
+  color: var(--gris-txt);
+  font-size: 11.5px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 18px;
+  font-family: inherit;
+}
+.btn-config-link:hover {
+  color: var(--negro);
+}
+.auth-config-box {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--gris-bg);
+  border-radius: 10px;
+  text-align: left;
+  border: 1px solid var(--gris-line);
+}
+.cfg-field {
+  margin-bottom: 10px;
+}
+.cfg-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gris-txt);
+  margin-bottom: 4px;
+}
+.cfg-field input {
+  width: 100%;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  border: 1px solid var(--gris-line);
+  border-radius: 6px;
+  font-family: monospace;
+}
+.btn-save-cfg {
+  width: 100%;
+  padding: 8px;
+  background: var(--celeste);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-save-cfg:hover {
+  background: var(--celeste-d);
+}
+
+/* Topbar user info & logout */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.user-email-badge {
+  background: rgba(255,255,255,0.22);
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+}
+.topbar-logout-btn {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+}
+.topbar-logout-btn:hover {
+  background: rgba(255,255,255,0.35);
+  color: #fff;
+}
+
+/* Spinner */
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3.5px solid var(--gris-line);
+  border-top-color: var(--celeste);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Pantalla de Carga -->
+<div id="loadingScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="spinner"></div>
+    <p style="margin-top:16px;font-weight:600;font-size:13px;color:var(--gris-txt);">Verificando sesión...</p>
+  </div>
+</div>
+
+<!-- Pantalla de Login -->
+<div id="loginScreen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-badge">Gobierno de Río Cuarto</div>
+    <h1 class="auth-title">Plan de Terminalidad</h1>
+    <p class="auth-sub">Educación Secundaria Orientada · Sexto Año Previas</p>
+    
+    <div class="auth-alert-info">
+      Acceso restringido para personal autorizado de la Coordinación Local de Educación.
+    </div>
+
+    <button id="btnLoginGoogle" class="btn-google" type="button">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+      </svg>
+      <span>Iniciar sesión con Google</span>
+    </button>
+
+    <div class="auth-footer-notes">
+      Ingresá con tu cuenta autorizada (<code>fmunoz@riocuarto.gov.ar</code>, <code>datos@riocuarto.gov.ar</code> o <code>cleriocuarto@gmail.com</code>).
+    </div>
+
+    <button id="btnToggleConfig" class="btn-config-link" type="button">⚙ Configuración de Auth0</button>
+    <div id="authConfigBox" class="auth-config-box" style="display:none;">
+      <div class="cfg-field">
+        <label>Auth0 Domain</label>
+        <input type="text" id="cfgDomain" placeholder="ej: dev-xxxx.us.auth0.com">
+      </div>
+      <div class="cfg-field">
+        <label>Auth0 Client ID</label>
+        <input type="text" id="cfgClientId" placeholder="ej: abc123xyz...">
+      </div>
+      <button id="btnSaveConfig" class="btn-save-cfg" type="button">Guardar credenciales</button>
+      <div id="cfgSavedMsg" style="display:none;color:var(--verde);font-size:11.5px;margin-top:6px;font-weight:600;">✓ Configuración guardada. Recargando…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Pantalla de Acceso Denegado (No autorizado) -->
+<div id="unauthorizedScreen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="auth-badge auth-badge-danger">Acceso no autorizado</div>
+    <h2 class="auth-title">Cuenta no habilitada</h2>
+    <p class="auth-sub" id="unauthorizedUserEmail" style="font-weight:700;color:var(--negro);"></p>
+    
+    <div class="auth-alert-danger">
+      Esta cuenta de Google no se encuentra en la lista blanca de usuarios autorizados para acceder al tablero.
+    </div>
+
+    <p class="auth-contact-help">Cuentas permitidas: <b>fmunoz@riocuarto.gov.ar</b>, <b>datos@riocuarto.gov.ar</b> y <b>cleriocuarto@gmail.com</b>. Si necesitas acceso institucional, contactate con la Coordinación Local de Educación.</p>
+
+    <button id="btnLogoutUnauthorized" class="btn-secondary-logout" type="button">
+      Cerrar sesión / Probar con otra cuenta
+    </button>
+  </div>
+</div>
+
+<!-- Contenedor del Tablero Protegido -->
+<div id="dashboardApp" style="display:none;">
+  <div class="topbar">
+    <span>Coordinación Local de Educación · Gobierno de Río Cuarto</span>
+    <div class="topbar-right">
+      <span id="userEmailBadge" class="user-email-badge"></span>
+      <button id="btnLogout" class="topbar-logout-btn" type="button">Cerrar sesión</button>
+      <span id="genDate"></span>
+    </div>
+  </div>
+  <div class="titlestrip">
+    <h1><span class="accent">Plan de Terminalidad</span> de Educación Secundaria Orientada</h1>
+    <p>Educación · Elegibilidad de estudiantes de 6° año</p>
+    <div class="desc">Estudiantes de 6° año (cohortes 2020–2025) que aún adeudan materias y son elegibles para el Plan de Terminalidad. El orden de prioridad se calcula por <b style="color:#fff">menor cantidad de materias previas</b>: a menos previas, mayor prioridad y elegibilidad. Los datos de contacto de cada escuela permiten a la Coordinadora avisar directamente que un/a alumno/a tiene la posibilidad de comenzar el plan.</div>
+  </div>
+
+  <main>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="panel">
+      <div class="charts">
+        <div>
+          <h2>Alumnos elegibles por escuela</h2>
+          <div class="panel-sub">Click en una escuela para ver sus datos de contacto</div>
+          <div class="legend">
+            <span><i class="swatch" style="background:var(--celeste)"></i>Dato confirmado (IPEM)</span>
+            <span><i class="swatch" style="background:var(--naranja)"></i>Dato estimado (IPET)</span>
+          </div>
+          <div id="schoolChart"></div>
+        </div>
+        <div>
+          <h2>Distribución de previas</h2>
+          <div class="panel-sub">Sobre los 170 casos con cantidad confirmada (IPEM)</div>
+          <div id="histChart" class="hist"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Listado priorizado</h2>
+      <div class="panel-sub">Click en una columna para ordenar. Por defecto: menor cantidad de previas primero. Usá "Contactar" para ver los datos de la escuela y avisar sobre ese alumno, y el check "Inscripto" para marcar quién se anotó definitivamente.</div>
+      <div class="filters">
+        <input type="text" id="fSearch" placeholder="Buscar por nombre o DNI…">
+        <select id="fEscuela"><option value="">Todas las escuelas</option></select>
+        <select id="fFuente">
+          <option value="">Todos los datos</option>
+          <option value="confirmado">Confirmado (IPEM)</option>
+          <option value="estimado">Estimado (IPET)</option>
+        </select>
+        <select id="fTier">
+          <option value="">Toda prioridad</option>
+          <option value="alta">Alta prioridad (1–3 previas)</option>
+          <option value="media">Media prioridad (4–6 previas)</option>
+          <option value="baja">Baja prioridad (7+ previas)</option>
+        </select>
+        <select id="fInscripto">
+          <option value="">Inscripción: todos</option>
+          <option value="si">Ya inscriptos</option>
+          <option value="no">Pendientes de inscribir</option>
+        </select>
+        <span class="count-badge" id="rowCount"></span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th data-k="rank" class="num">#</th>
+              <th data-k="nombre">Estudiante</th>
+              <th data-k="dni" class="num">DNI</th>
+              <th data-k="escuela">Escuela</th>
+              <th data-k="turno">Turno</th>
+              <th data-k="previas" class="num sorted">Previas</th>
+              <th data-k="fuente">Dato</th>
+              <th>Contacto</th>
+              <th class="num">Inscripto</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="empty-state" id="emptyState" style="display:none;">No se encontraron alumnos con esos filtros.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Notas metodológicas</h2>
+      <div class="notes" id="notes"></div>
+    </div>
+  </main>
+
+  <footer>
+    Fuentes: <i>Informe Estudiantes de 6° año con asignaturas previas por escuela</i> (IPEM — Instituto Provincial de Educación Media, 170 alumnos con previas confirmadas) ·
+    <i>Listado Estudiantes Sin Egreso Efectivo 2025</i> (IPET — Instituto Provincial de Educación Técnica, 88 alumnos, cantidad de previas estimada) ·
+    <i>Base Única de Datos Instituciones Educativas (B.U.D.I.E.)</i> (datos de contacto por escuela).
+    Generado por Coordinación Local de Educación para uso interno — Gobierno de Río Cuarto.
+  </footer>
+</div>
+
+<script>
+const STUDENTS = [{"id":1,"nombre":"ABREGU SILVA, ALDANA LUDMILA","dni":"48073817","dniRaw":"48073817","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":2,"nombre":"BECCHERO LIONI, DARIO AGUSTÍN","dni":"48129774","dniRaw":"48129774","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":12,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":3,"nombre":"BENITEZ, LUANA TRINIDAD","dni":"47363475","dniRaw":"47363475","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":4,"nombre":"CABRERA, EMILIANO GEREMÍAS","dni":"46849039","dniRaw":"46849039","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":5,"nombre":"DIAZ, SILVIO IVÁN","dni":"47986811","dniRaw":"47986811","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":6,"nombre":"FERNANDEZ, KEVIN ELIAN","dni":"48601282","dniRaw":"48601282","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":9,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":7,"nombre":"FLORES, JOSE BENJAMIN","dni":"47253431","dniRaw":"47253431","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":8,"nombre":"LUCERO, MILAGROS LUZ","dni":"48074032","dniRaw":"48074032","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":9,"nombre":"LUNA, ANTONELA ABIGAIL","dni":"48129633","dniRaw":"48129633","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":10,"nombre":"OGA, TIZIANA AGUSTINA","dni":"48129669","dniRaw":"48129669","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":11,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":11,"nombre":"PAZ, LAUTARO ISMAEL","dni":"48902257","dniRaw":"48902257","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":11,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":12,"nombre":"PEREZ, RUTH NICOLE","dni":"47711970","dniRaw":"47711970","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":13,"nombre":"RIVIERS, LUCIANA MACARENA","dni":"47711811","dniRaw":"47711811","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":14,"nombre":"SANCHEZ, SOFÍA EVA","dni":"48602643","dniRaw":"48602643","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":15,"nombre":"SOSA GUTIERREZ, NELSON GERMÁN","dni":"48601203","dniRaw":"48601203","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":16,"nombre":"TORRES, PAULA AGUSTINA","dni":"47911295","dniRaw":"47911295","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":17,"nombre":"BEGA, SANTIAGO NICOLÁS","dni":"47736851","dniRaw":"47736851","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":18,"nombre":"BIDONDO, CONSTANZA INÉS","dni":"46880484","dniRaw":"46880484","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":19,"nombre":"CASALI MALDONADO, AXEL VALENTÍN","dni":"47363239","dniRaw":"47363239","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":12,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":20,"nombre":"FALSIONE, PRISCILA EVELYN","dni":"48073803","dniRaw":"48073803","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":21,"nombre":"GAUNA, ARIADNA LUCÍA","dni":"47711914","dniRaw":"47711914","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":22,"nombre":"MERCAU FUNES, AARON WALTER JOAQUIN","dni":"48602758","dniRaw":"48602758","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":8,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":23,"nombre":"ORTIZ, ALEXIS ARIEL","dni":"47666813","dniRaw":"47666813","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":24,"nombre":"PEREYRA, MAIA BEATRIZ","dni":"47883891","dniRaw":"47883891","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":25,"nombre":"TORRES AGUERO, LUDMILA NATALÍ","dni":"47988421","dniRaw":"47988421","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":26,"nombre":"VALLEJOS, LUKA DANIEL","dni":"46850414","dniRaw":"46850414","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":27,"nombre":"VELEZ, MATÍAS EMANUEL","dni":"46511095","dniRaw":"46511095","escuela":"IPEM N° 27 \"DR. RENÉ FAVALORO\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":28,"nombre":"BATTISTINI, TIZIANA AILIN","dni":"47711940","dniRaw":"47711940","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":16,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":29,"nombre":"CARDETTI MARASCHI, RODRIGO SALVADOR","dni":"47711656","dniRaw":"47711656","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":30,"nombre":"LEGUIZAMON, DANA CELESTE","dni":"46850447","dniRaw":"46850447","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":31,"nombre":"LOPEZ, DAMARIS ABIGAIL","dni":"47711705","dniRaw":"47711705","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":32,"nombre":"MUÑOZ MODESTI, PRISCILA JAQUELINE","dni":"50262256","dniRaw":"50262256","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":33,"nombre":"NOVILLO, SHARIM AGUSTINA","dni":"48074057","dniRaw":"48074057","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":34,"nombre":"ASTIGARRAGA SIENZA, AQUILES DAVID","dni":"48073935","dniRaw":"48073935","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":35,"nombre":"CASILLA, RUTH ABIGAIL","dni":"48130088","dniRaw":"48130088","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":36,"nombre":"FLESIA, ALDANA SELENE","dni":"47986829","dniRaw":"47986829","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":37,"nombre":"KOBER AIMALE, JOAQUIN NICOLAS","dni":"48602721","dniRaw":"48602721","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":38,"nombre":"LUJAN, AGOSTINA MILENA","dni":"47986810","dniRaw":"47986810","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":39,"nombre":"LUJAN, LUDMILA ABRIL","dni":"47364725","dniRaw":"47364725","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":40,"nombre":"ROMERO, LENNY JASON JESUS","dni":"48073890","dniRaw":"48073890","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":10,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":41,"nombre":"ULIARTE, NAIARA YEMINA","dni":"48129885","dniRaw":"48129885","escuela":"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"","orientacion":"","division":"A","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":42,"nombre":"ACOSTA, ALEX BENJAMIN","dni":"48601217","dniRaw":"48601217","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"MAÑANA","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":43,"nombre":"PLEITAVINO, DANIELA AYLEN","dni":"48673177","dniRaw":"48673177","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"MAÑANA","previas":11,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":44,"nombre":"ROCHA, JENIFER TIZIANA","dni":"48325871","dniRaw":"48325871","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"MAÑANA","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":45,"nombre":"VILLARREAL, MARCOS EZEQUIEL","dni":"47988258","dniRaw":"47988258","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"MAÑANA","previas":8,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":46,"nombre":"ALANIS, DIEGO VALENTIN","dni":"48129689","dniRaw":"48129689","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"TARDE","previas":14,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":47,"nombre":"MANZANO LUQUE, TIAGO URIEL","dni":"47911216","dniRaw":"47911216","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"TARDE","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":48,"nombre":"RIVIERS, KIARA ANDREA","dni":"46769728","dniRaw":"46769728","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":49,"nombre":"SOSA, MATIAS ARIEL","dni":"48130091","dniRaw":"48130091","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":50,"nombre":"SUAREZ, MILENA JAZMIN","dni":"47986873","dniRaw":"47986873","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":51,"nombre":"ZABALA, JOEL NAHUEL","dni":"47988488","dniRaw":"47988488","escuela":"IPEM N° 29 \"FELIPE GALIZIA\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":52,"nombre":"ALTURRIA, ROCIO BELEN","dni":"48073889","dniRaw":"48073889","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":53,"nombre":"GIGENA, MAXIMO FABIAN","dni":"47711794","dniRaw":"47711794","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":54,"nombre":"GONZALEZ, YULIANA VALENTINA","dni":"48073825","dniRaw":"48073825","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":55,"nombre":"HEREDIA NIEVA, NICOLE AILIN","dni":"47911986","dniRaw":"47911986","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":56,"nombre":"LOPEZ, OSCAR VALENTIN","dni":"48073927","dniRaw":"48073927","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":57,"nombre":"MARTINEZ GUTIERREZ, JOSE LUIS","dni":"95061394","dniRaw":"95061394","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":58,"nombre":"MORENO, BERENICE NICOLLE","dni":"47363534","dniRaw":"47363534","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":59,"nombre":"NADAL, SANTINO LORENZO","dni":"46511083","dniRaw":"46511083","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":60,"nombre":"OLMEDO, JULIETA","dni":"47252114","dniRaw":"47252114","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":61,"nombre":"PENESI, JOEL EFRAIN","dni":"47711981","dniRaw":"47711981","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":62,"nombre":"PIEDI OLIVA, CANDELA","dni":"47711957","dniRaw":"47711957","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":63,"nombre":"PIEDI OLIVA, GIULIANA","dni":"47711956","dniRaw":"47711956","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":64,"nombre":"RODRIGUEZ, LAUTARO BENJAMIN","dni":"48451226","dniRaw":"48451226","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":65,"nombre":"SILVA, AGOSTINA ISABEL","dni":"47825345","dniRaw":"47825345","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":66,"nombre":"TABOADA, JULIETA MORENA","dni":"48074054","dniRaw":"48074054","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":67,"nombre":"TAPIA, JORGE ALEJANDRO","dni":"47986750","dniRaw":"47986750","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":68,"nombre":"TARIFA ALARCON, YASMIN JACQUELINE","dni":"48314877","dniRaw":"48314877","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":69,"nombre":"VIEYRA, TATIANA ABIGAIL","dni":"47711891","dniRaw":"47711891","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":70,"nombre":"VIEYRA CASTAÑO, ABIGAIL","dni":"48073952","dniRaw":"48073952","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":71,"nombre":"ARRIETA, MARIA PAZ","dni":"47911584","dniRaw":"47911584","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":72,"nombre":"AVILA, AXEL MAXIMILIANO","dni":"47363510","dniRaw":"47363510","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":73,"nombre":"CACERES AMAYA, MARTINA","dni":"47711631","dniRaw":"47711631","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":74,"nombre":"FERNANDEZ, MORENA TIZIANA","dni":"49290438","dniRaw":"49290438","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":75,"nombre":"MONDINI, AGOSTINA ANTONELA","dni":"48352925","dniRaw":"48352925","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":76,"nombre":"MOREIRA, MARTINA","dni":"47580819","dniRaw":"47580819","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":77,"nombre":"OLIVERO, MARTINA NAIR","dni":"48451270","dniRaw":"48451270","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":78,"nombre":"RAMIREZ, BRUNO MARTIN","dni":"50835686","dniRaw":"50835686","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":79,"nombre":"REMIREZ, SABRINA ANAEL","dni":"47711628","dniRaw":"47711628","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":80,"nombre":"ROSALES, AGUSTINA ABRIL","dni":"48071577","dniRaw":"48071577","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":81,"nombre":"VARELA, JONAS AGUSTIN","dni":"48129708","dniRaw":"48129708","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":82,"nombre":"VILLALOBO, AGUSTINA","dni":"47711679","dniRaw":"47711679","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":83,"nombre":"ZABALA, LAUTARO LEONEL","dni":"46511057","dniRaw":"46511057","escuela":"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":84,"nombre":"BUENO, ALEJANDRO JOSE","dni":"47363234","dniRaw":"47363234","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":85,"nombre":"BULACIO, LARA NAHIR","dni":"48129873","dniRaw":"48129873","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":86,"nombre":"CHEN, THIAGO SIMON","dni":"48074073","dniRaw":"48074073","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":87,"nombre":"CONTRERA, THIAGO DAMIAN","dni":"48130064","dniRaw":"48130064","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":88,"nombre":"NIETO, DAVID","dni":"47711722","dniRaw":"47711722","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":89,"nombre":"ONTIVERO, LISANDRO FERMIN","dni":"47711865","dniRaw":"47711865","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":90,"nombre":"SANCHEZ, BRUNELLA VICTORIA","dni":"48129714","dniRaw":"48129714","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":91,"nombre":"AGUILERA, MAXIMO JUAN","dni":"48129929","dniRaw":"48129929","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":92,"nombre":"MIRANDA, MAIA CATHERINE","dni":"47988091","dniRaw":"47988091","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":93,"nombre":"PASCUINI, SANTIAGO MARTIN","dni":"48130035","dniRaw":"48130035","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":94,"nombre":"SORIA BALMACEDA, LUCIO","dni":"48537335","dniRaw":"48537335","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":95,"nombre":"SUAREZ, REBECA CONSTANZA","dni":"48601274","dniRaw":"48601274","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":96,"nombre":"ALUSTIZA, CRISTIAN BENJAMIN","dni":"48073746","dniRaw":"48073746","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":97,"nombre":"CORONEL GIAIME, MATEO DAVID","dni":"48602741","dniRaw":"48602741","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":98,"nombre":"DIAZ, MARIA LUZ","dni":"48535033","dniRaw":"48535033","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":99,"nombre":"GONZALEZ, MAITE PILAR","dni":"48535021","dniRaw":"48535021","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":100,"nombre":"PADULA, LARA AYLIN","dni":"47363215","dniRaw":"47363215","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":101,"nombre":"RABANAL ARIAS, SOFIA VALENTINA","dni":"48451381","dniRaw":"48451381","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":102,"nombre":"RIVAROLA, MIRKO SANTIAGO","dni":"48130076","dniRaw":"48130076","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":103,"nombre":"WOYTOK, VALENTINA BELEN","dni":"48073710","dniRaw":"48073710","escuela":"IPEM N° 128 \"DR. MANUEL BELGRANO\"","orientacion":"","division":"B","turno":"TARDE","previas":14,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":104,"nombre":"ALUSTIZA, JUAN IGNACIO","dni":"48073942","dniRaw":"48073942","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":105,"nombre":"BERON, EZEQUIEL ROMAN","dni":"47666723","dniRaw":"47666723","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":9,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":106,"nombre":"BIANCO, BENJAMIN NICOLAS","dni":"48410339","dniRaw":"48410339","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":16,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":107,"nombre":"BOTICELLI, LUISANA","dni":"48073789","dniRaw":"48073789","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":12,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":108,"nombre":"CABRAL, MARCO LEON","dni":"48537381","dniRaw":"48537381","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":109,"nombre":"CADENA TORREZ, ANDRES MATIAS","dni":"47464632","dniRaw":"47464632","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":110,"nombre":"CASCO, FACUNDO LEONEL","dni":"47464797","dniRaw":"47464797","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":111,"nombre":"CEJAS, CAMILA","dni":"47464919","dniRaw":"47464919","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":112,"nombre":"CHAVEZ, KHALIL EMIR","dni":"47464650","dniRaw":"47464650","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":113,"nombre":"CHIAPPELLO LOPEZ, LUCAS AGUSTIN","dni":"48451311","dniRaw":"48451311","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":14,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":114,"nombre":"ESQUIVEL VIGNA, FABRICIO","dni":"47988316","dniRaw":"47988316","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":115,"nombre":"FERNANDEZ, ELIAS FEDERICO","dni":"48966258","dniRaw":"48966258","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":116,"nombre":"FIGUEROA BUSCAROL, SOL MILAGROS DEL MAR","dni":"48601373","dniRaw":"48601373","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":117,"nombre":"GAITAN, ROMAN","dni":"47754027","dniRaw":"47754027","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":118,"nombre":"GALLARDO, AGUSTIN GABRIEL","dni":"47911955","dniRaw":"47911955","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":119,"nombre":"GALLARDO, VALENTIN ROBERTO","dni":"48601402","dniRaw":"48601402","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":9,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":120,"nombre":"GUEVARA, SHARON NAHIR","dni":"48129770","dniRaw":"48129770","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":14,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":121,"nombre":"GUEVARA PARRA, EDSON","dni":"94984653","dniRaw":"94984653","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":122,"nombre":"IRUSTA, LAUTARO","dni":"48601476","dniRaw":"48601476","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":123,"nombre":"MARTINEZ, JULIETA NAHIARA","dni":"46345180","dniRaw":"46345180","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":124,"nombre":"NARVAEZ, ABRIL ZOE","dni":"48073736","dniRaw":"48073736","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":125,"nombre":"NUÑEZ, LISANDRO BENJAMIN","dni":"48537304","dniRaw":"48537304","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":126,"nombre":"ORTIZ, TIZIANA VALENTINA","dni":"48073907","dniRaw":"48073907","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":127,"nombre":"OVIEDO, IGNACIO DANIEL","dni":"46511479","dniRaw":"46511479","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":128,"nombre":"PERALTA, CAROLINA MICAELA","dni":"47940022","dniRaw":"47940022","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":129,"nombre":"RIVAROLA, MAURO JOAQUIN","dni":"47580860","dniRaw":"47580860","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":130,"nombre":"ROJO, DELFINA","dni":"46849082","dniRaw":"46849082","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":131,"nombre":"ROMERO MARTINEZ, ENZO MARTIN","dni":"47824441","dniRaw":"47824441","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":132,"nombre":"SOSA RODRIGUEZ, ALVARO IGNACIO","dni":"48966282","dniRaw":"48966282","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":133,"nombre":"TORRES VIVAS, STEFANO NICOLAS","dni":"47911242","dniRaw":"47911242","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":134,"nombre":"URRUTIA CHIAVASSA, JAZMIN","dni":"47666770","dniRaw":"47666770","escuela":"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"","orientacion":"","division":"A","turno":"MAÑANA","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":135,"nombre":"ALANIZ, RODRIGO DANIEL","dni":"46849360","dniRaw":"46849360","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":136,"nombre":"CALIVA MOLINA, ENZO RADAMEL","dni":"47838802","dniRaw":"47838802","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":137,"nombre":"CASTILLO, VANINA GUADALUPE","dni":"47251128","dniRaw":"47251128","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":138,"nombre":"CORREA, MATEO JOAQUIN","dni":"47711968","dniRaw":"47711968","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":139,"nombre":"DOMINGUEZ, JOEL ALEJANDRO FABIAN","dni":"47713881","dniRaw":"47713881","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":140,"nombre":"DOMINGUEZ ETCHETTO, MATIAS EMILIANO","dni":"48602733","dniRaw":"48602733","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":141,"nombre":"GAITAN, MILAGROS MAILEN","dni":"47911953","dniRaw":"47911953","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":142,"nombre":"GOMEZ MAMANI, DAYLER GREGORY","dni":"94317274","dniRaw":"94317274","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":143,"nombre":"GONZALEZ VERA, FACUNDO JOSUE","dni":"46849409","dniRaw":"46849409","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":144,"nombre":"LOPEZ, ROCIO ABIGAIL","dni":"46887682","dniRaw":"46887682","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":145,"nombre":"MORENO, ALAN URIEL","dni":"47711712","dniRaw":"47711712","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":5,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":146,"nombre":"PALACIOS, ALEXIS EZEQUIEL","dni":"46511535","dniRaw":"46511535","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":8,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":147,"nombre":"PAREDES MEDINA, ALEXANDER LEONEL","dni":"45938390","dniRaw":"45938390","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":148,"nombre":"PELAEZ, MATIAS ARMANDO","dni":"47251213","dniRaw":"47251213","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":3,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":149,"nombre":"QUEVEDO, CANDELA SOLEDAD","dni":"47579650","dniRaw":"47579650","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":150,"nombre":"ROJO, KEVIN NATANAEL","dni":"46511044","dniRaw":"46511044","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":151,"nombre":"SORDELLI VILCHEZ, PIA","dni":"47464498","dniRaw":"47464498","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":152,"nombre":"VARELA ROSALES, TIAGO NICOLAS","dni":"47580889","dniRaw":"47580889","escuela":"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"","orientacion":"","division":"A","turno":"TARDE","previas":11,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":153,"nombre":"CARDENAS, ROSARIO ANGELES","dni":"48129702","dniRaw":"48129702","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":4,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":154,"nombre":"CERRULA QUEVEDO, BRISA MAGALÍ","dni":"48451146","dniRaw":"48451146","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":155,"nombre":"DOMINGUEZ, DAYANA GRACIELA","dni":"48965078","dniRaw":"48965078","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":156,"nombre":"FARIAS ORTIZ, KEVIN MAXIMILIANO","dni":"48451242","dniRaw":"48451242","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":157,"nombre":"MORAN, THIAGO LAUTARO","dni":"47253451","dniRaw":"47253451","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":15,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":158,"nombre":"OLMEDO, BRENDA MICAELA ALEJANDRA","dni":"47666834","dniRaw":"47666834","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":159,"nombre":"RODRIGUEZ, ELIANA AYLIN","dni":"47666734","dniRaw":"47666734","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":160,"nombre":"TISSERA, BARBARA LUCIA","dni":"47365727","dniRaw":"47365727","escuela":"IPEM N° 283 ANEXO CIUDAD NUEVA","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":161,"nombre":"GEREZ, SAMIRA GUADALUPE","dni":"48129799","dniRaw":"48129799","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":9,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":162,"nombre":"IRUSTA RAMIREZ, DAVID GABRIEL","dni":"48451647","dniRaw":"48451647","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":7,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":163,"nombre":"LUCERO, BELEN","dni":"48074008","dniRaw":"48074008","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":164,"nombre":"NIEVAS, MAYRA YANINA","dni":"48537334","dniRaw":"48537334","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":2,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":165,"nombre":"OLIVERI, ELIAS IVAN","dni":"49223312","dniRaw":"49223312","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":166,"nombre":"ORDOÑEZ MENDEZ, CRISTIAN LEONEL","dni":"48601289","dniRaw":"48601289","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":6,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":167,"nombre":"QUEVEDO, LUNA MIA DANAE","dni":"48451151","dniRaw":"48451151","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":168,"nombre":"SANCHEZ, MILAGROS DE LOS ANGELES","dni":"47665363","dniRaw":"47665363","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":17,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":169,"nombre":"SCHOOP, BRIAN FEDERICO","dni":"47911162","dniRaw":"47911162","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":9,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":170,"nombre":"YORYE, THIAGO DIEGO JOSE","dni":"48816567","dniRaw":"48816567","escuela":"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"","orientacion":"","division":"A","turno":"TARDE","previas":1,"estimado":false,"fuente":"Informe 6° año con previas por escuela (IPEM)"},{"id":171,"nombre":"ARGUELLO D´ALBERTO, SANTINO","dni":"47911239","dniRaw":"47.911.239","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":172,"nombre":"BOTTINO, MAXIMO VALENTIN","dni":"47363227","dniRaw":"47.363.227","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":173,"nombre":"CEBALLOS, MAXIMILIANO ALEJANDRO","dni":"46511382","dniRaw":"46.511.382","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":174,"nombre":"DE CURSIS, SANTIAGO","dni":"47343747","dniRaw":"47.343.747","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":175,"nombre":"FAJARDO NINA, ANAHI","dni":"94994777","dniRaw":"94.994.777","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":176,"nombre":"FERNANDEZ OJEDA, BRANDO IMANOL","dni":"47711647","dniRaw":"47.711.647","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":177,"nombre":"FERREYRA, TOMAS AGUSTIN","dni":"47711690","dniRaw":"47.711.690","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":178,"nombre":"GALVAN MORENO, THIAGO JUAN","dni":"47832988","dniRaw":"47.832.988","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":179,"nombre":"GELARDINO, CONSTANZA","dni":"47463448","dniRaw":"47.463.448","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":180,"nombre":"GIROLA, ALEJO JOAQUIN","dni":"47363304","dniRaw":"47.363.304","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":181,"nombre":"LARRALDE, NICOLAS JOSE","dni":"47464983","dniRaw":"47.464.983","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":182,"nombre":"LEDESMA, CRISTIAN ALEJANDRO","dni":"47463468","dniRaw":"47.463.468","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":183,"nombre":"LEDESMA, MATIAS EMILIANO","dni":"46159786","dniRaw":"46.159.786","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":184,"nombre":"LEPORI, MATIAS AGUSTIN","dni":"47911928","dniRaw":"47.911.928","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":185,"nombre":"LUCERO GIAMAGLI, TIZIANO MATEO","dni":"47253398","dniRaw":"47.253.398","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":186,"nombre":"MARTELIANO, MATIAS AGUSTIN","dni":"47911175","dniRaw":"47.911.175","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":187,"nombre":"MERCADO, VALENTINA","dni":"47714682","dniRaw":"47.714.682","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":188,"nombre":"MOLINA, LUCIANO BENJAMIN","dni":"46454456","dniRaw":"46.454.456","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":189,"nombre":"PEREZ, DARIO DAVID","dni":"47988097","dniRaw":"47.988.097","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":190,"nombre":"PEREZ, KEILA BELEN","dni":"46808497","dniRaw":"46.808.497","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":191,"nombre":"PEREZ BLENGINO, MARCOS JOAQUIN","dni":"47464720","dniRaw":"47.464.720","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":192,"nombre":"ROMERO BALCAZAR, LUIS ALBERTO","dni":"10716601","dniRaw":"10.716.601 (PASAPORTE)","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":193,"nombre":"SULLCA QUISPE, ALEX DANIEL","dni":"47875643","dniRaw":"47.875.643","escuela":"IPET N° 259 \"Ambrosio Olmos\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":194,"nombre":"BIANCHI, MAICO EZEQUIEL","dni":"47464982","dniRaw":"47.464.982","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":195,"nombre":"BRITOS, MARIA JAZMIN","dni":"47667956","dniRaw":"47.667.956","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":196,"nombre":"CUELLO, PRISCILA CANDELA","dni":"46511386","dniRaw":"46.511.386","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":197,"nombre":"GOMEZ, URIEL NICOLAS","dni":"47365710","dniRaw":"47.365.710","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":198,"nombre":"HEREDIA, TIAGO FRANCO","dni":"46849339","dniRaw":"46.849.339","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":199,"nombre":"MIRANDA, MELANI NARELLA","dni":"47667938","dniRaw":"47.667.938","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":200,"nombre":"ROJAS OCAMPO, CECILIA ISABEL","dni":"95680354","dniRaw":"95.680.354","escuela":"IPET N° 314","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":201,"nombre":"PEREYRA DEMIAN ELIAS","dni":"47364724","dniRaw":"47.364.724","escuela":"IPET N° 362","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":202,"nombre":"CELIZ, AGUSTINA","dni":"46511372","dniRaw":"46511372","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":203,"nombre":"COY IVO","dni":"46226829","dniRaw":"46226829","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":204,"nombre":"CUELLO LUCAS","dni":"47824493","dniRaw":"47824493","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":205,"nombre":"FUNES, JACQUELINE","dni":"47582348","dniRaw":"47582348","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":206,"nombre":"CIARAMELLA ARACELI","dni":"46887522","dniRaw":"46887522","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":207,"nombre":"COSSIMANO AGUSTIN","dni":"46849359","dniRaw":"46849359","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":208,"nombre":"GUIÑAZU AARON","dni":"47714678","dniRaw":"47714678","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":209,"nombre":"MERCADO DAIRA","dni":"46511332","dniRaw":"46511332","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":210,"nombre":"MERCADO ELIAS","dni":"46887572","dniRaw":"46887572","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":211,"nombre":"OLGUIN ALICIA","dni":"47667953","dniRaw":"47667953","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":212,"nombre":"PEREZ LUCIANO","dni":"46887435","dniRaw":"46887435","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":213,"nombre":"QUIROGA CRISTIAN","dni":"45405987","dniRaw":"45405987","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":214,"nombre":"RAMIREZ FELICCI MATEO","dni":"47582346","dniRaw":"47582346","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":215,"nombre":"RIVERO LOURENCO AMILKAR","dni":"46770065","dniRaw":"46770065","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":216,"nombre":"ROSSI SOFIA","dni":"46887675","dniRaw":"46887675","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":217,"nombre":"VILLEGAS DANA","dni":"46545824","dniRaw":"46545824","escuela":"IPET N° 26 \"Juan Filloy\"","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":218,"nombre":"MARTÍN DE ANGELO, NAHUEL DAVID","dni":"47825321","dniRaw":"47825321","escuela":"IPET N° 79","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":219,"nombre":"ENGERT, LUCÍA MAGALÍ","dni":"46889007","dniRaw":"46889007","escuela":"IPET N° 79","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":220,"nombre":"BAZÁN, JUAN DAVID","dni":"46889007","dniRaw":"46889007","escuela":"IPET N° 79","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":221,"nombre":"TOLEDO, LAUTARO","dni":"47666888","dniRaw":"47666888","escuela":"IPET N° 79","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":222,"nombre":"MIÑO, GASPAR NICOLÁS","dni":"47695325","dniRaw":"47695325","escuela":"IPET N° 79","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":223,"nombre":"ALANIZ BRENDA ANAHI","dni":"47988423","dniRaw":"47.988.423","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":224,"nombre":"BARBERO ANTONELLA MACAREN","dni":"48451247","dniRaw":"48.451.247","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":225,"nombre":"CALDERON CASERES MORENA ABRIL","dni":"48327736","dniRaw":"48.327.736","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":226,"nombre":"GAUNA, Jesica Mailen","dni":"48601365","dniRaw":"48.601.365","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":227,"nombre":"MALDONADO, Antonela Sofia","dni":"48451159","dniRaw":"48.451.159","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":228,"nombre":"OLGUIN, Jesica Stefania","dni":"48451680","dniRaw":"48.451.680","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":229,"nombre":"PEREZ LACUESTA, Thiago","dni":"95425572","dniRaw":"95.425.572","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":230,"nombre":"SILVA, Luana Valentina","dni":"47711853","dniRaw":"47.711.853","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":231,"nombre":"VELAZQUEZ SALDAÑO Tiago","dni":"48129668","dniRaw":"48.129.668","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":232,"nombre":"ARAVENA, Brian German","dni":"48601313","dniRaw":"48.601.313","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":233,"nombre":"BENEDETTO, Santiago Salvador","dni":"48129982","dniRaw":"48.129.982","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":234,"nombre":"BILDOZA RISACASA, Lara Pilar","dni":"47988494","dniRaw":"47.988.494","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":235,"nombre":"CORRAL, Florencia","dni":"47988491","dniRaw":"47.988.491","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":236,"nombre":"FERREYRA, Trinidad Esperanza del Lujan","dni":"48451189","dniRaw":"48.451.189","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":237,"nombre":"LENCINAS BENITEZ, Sofia Candela","dni":"47464662","dniRaw":"47.464.662","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":238,"nombre":"LUNA GARCIA, Madeleine Nicole","dni":"48129866","dniRaw":"48.129.866","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":239,"nombre":"RIOS FLORES, Morena Antonella","dni":"47711876","dniRaw":"47.711.876","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":240,"nombre":"RIVAROLA TEJEDA, Constanza Anahí","dni":"46887627","dniRaw":"46.887.627","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":241,"nombre":"TISSERA SANCHEZ, Tobías Mateo","dni":"47911222","dniRaw":"47.911.222","escuela":"I.P.E.MyT N° 203","orientacion":"Economía y Administración","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":242,"nombre":"BALMACEDA AARON JARED","dni":"47666815","dniRaw":"47.666.815","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":243,"nombre":"LEQUIN ABRIL AGOSTINA","dni":"47363185","dniRaw":"47.363.185","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":244,"nombre":"LOPEZ BASSANI THIAGO TOMAS","dni":"46887576","dniRaw":"46.887.576","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":245,"nombre":"MARCHETTI MILAGROS","dni":"47487633","dniRaw":"47.487.633","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":246,"nombre":"PRINCIPI CORONEL DIEGO SANTINO","dni":"4791186","dniRaw":"4.791.186","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":247,"nombre":"RIOS DIAZ LAUREANO AGUSTIN","dni":"47363972","dniRaw":"47.363.972","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":248,"nombre":"ROMERO FLORENCIA ABIGAIL","dni":"46708338","dniRaw":"46.708.338","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":249,"nombre":"SUAREZ ROCIO","dni":"48130056","dniRaw":"48.130.056","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":250,"nombre":"BECERRA MARTINA GUADALUPE","dni":"47667932","dniRaw":"47.667.932","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":251,"nombre":"BONANSEA BRISA MORENA","dni":"47911911","dniRaw":"47.911.911","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":252,"nombre":"CALDERON CAMILA LUJAN","dni":"47911914","dniRaw":"47.911.914","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":253,"nombre":"GUZMAN MARIA PILAR","dni":"47464385","dniRaw":"47.464.385","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":254,"nombre":"MUÑOZ GUSTAVO EMANUEL","dni":"50093289","dniRaw":"50.093.289","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":255,"nombre":"MUÑOZ MAILEN ROCIO","dni":"47464802","dniRaw":"47.464.802","escuela":"I.P.E.MyT N° 203","orientacion":"Técnico en Informática Profesional y Personal","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":256,"nombre":"MORÁN, CHIARA LUDMILA","dni":"48074018","dniRaw":"48.074.018","escuela":"Escuela Experimental TIC - Biotecnología","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":257,"nombre":"MORIENA, JUAN PABLO","dni":"48073862","dniRaw":"48.073.862","escuela":"Escuela Experimental TIC - Biotecnología","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"},{"id":258,"nombre":"SITKO, JULIÁN ABRAHAM","dni":"48130074","dniRaw":"48.130.074","escuela":"Escuela Experimental TIC - Biotecnología","orientacion":"","division":"","turno":"","previas":5,"estimado":true,"fuente":"Listado sin egreso efectivo 2025 (IPET)"}];
+const SCHOOL_CONTACTS = {"IPEM N° 27 \"DR. RENÉ FAVALORO\"":{"director":"ALEJANDRO CANTON","domicilio":"11 de Noviembre 1150, X5800ACW Río Cuarto, Córdoba","telCen":"0358 4672946","telCenHref":"03584672946","telDirectora":"0358 4170269","telDirectoraHref":"03584170269","correoInst":"EE0310927@me.cba.gov.ar","correoPersonal":"alejandrocanton2011@gmail.com"},"IPEM N° 28 \"VILLA DE LA CONCEPCIÓN DEL RÍO CUARTO\"":{"director":"MARIEL GONZÁLEZ","domicilio":"Venezuela 950, X5804 Río Cuarto, Córdoba","telCen":"0358 4676805","telCenHref":"03584676805","telDirectora":"0358 4115999","telDirectoraHref":"03584115999","correoInst":"EE0310928@me.cba.gov.ar","correoPersonal":"marielgonzalez1973@yahoo.com.ar"},"IPEM N° 29 \"FELIPE GALIZIA\"":{"director":"MABEL EMILIANI","domicilio":"CERVANTES S/N, RIO CUARTO, CORDOBA","telCen":"0358 4676826","telCenHref":"03584676826","telDirectora":"0358 4018184","telDirectoraHref":"03584018184","correoInst":"EE0310929@me.cba.gov.ar","correoPersonal":"mabelemiliani@yahoo.com.ar"},"IPEM N° 95 \"MARIQUITA SÁNCHEZ DE THOMPSON\"":{"director":"ANALIA BARBOSA","domicilio":"Manco Cápac 50, X5804 Río Cuarto, Córdoba","telCen":"0358 4672926","telCenHref":"03584672926","telDirectora":"0358 4029890","telDirectoraHref":"03584029890","correoInst":"EE0310512@me.cba.gov.ar","correoPersonal":"barbosaany71@gmail.com"},"IPEM N° 128 \"DR. MANUEL BELGRANO\"":{"director":"MÓNICA SÁNCHEZ","domicilio":"Sobremonte 1357, X5800 Río Cuarto, Córdoba","telCen":"0358 4676802","telCenHref":"03584676802","telDirectora":"0358 4373818","telDirectoraHref":"03584373818","correoInst":"EE0310553@me.cba.gov.ar","correoPersonal":"mes.f@hotmail..com"},"IPEM N° 281 \"DR. CARLOS LUCERO KELLY\"":{"director":"ANDREA ROSSATTO","domicilio":"Baigorria 463, X5800CQI Río Cuarto, Córdoba","telCen":"0358 4672911","telCenHref":"03584672911","telDirectora":"0358 4015758","telDirectoraHref":"03584015758","correoInst":"EE0320210@me.cba.gov.ar","correoPersonal":"andrearossatto@hotmail.com"},"IPEM N° 283 \"FRAY MAMERTO ESQUIÚ\"":{"director":"LUCAS OLIVERO","domicilio":"Baigorria 463, X5800CQI Río Cuarto, Córdoba","telCen":"0358 4672912","telCenHref":"03584672912","telDirectora":"0358 4188691","telDirectoraHref":"03584188691","correoInst":"EE0320211@me.cba.gov.ar","correoPersonal":"lucasmatiasolivero@hotmail.com"},"IPEM N° 283 ANEXO CIUDAD NUEVA":{"director":"LUCAS OLIVERO","domicilio":"Dr. Carlos Gaudard 3480, X5806 Río Cuarto, Córdoba","telCen":"0358 4676842","telCenHref":"03584676842","telDirectora":"0358 4188691","telDirectoraHref":"03584188691","correoInst":"EE0311437@me.cba.gov.ar","correoPersonal":"lucasmatiasolivero@hotmail.com"},"IPEM N° 330 \"EDGARDO ROBERTO PRAMPARO\"":{"director":"PABLO BOCCHETTO","domicilio":"Av. Amadeo Sabattini 4000, Río Cuarto, Córdoba","telCen":"0358 4676829","telCenHref":"03584676829","telDirectora":"0358 4306950","telDirectoraHref":"03584306950","correoInst":"EE0310948@me.cba.gov.ar","correoPersonal":"pabloboccetto@gmail.com"},"IPET N° 259 \"Ambrosio Olmos\"":{"director":"CARLOS GAITAN","domicilio":"Baigorria 527, X5800CQK Córdoba","telCen":"","telCenHref":"","telDirectora":"","telDirectoraHref":"","correoInst":"","correoPersonal":""},"IPET N° 314":{"director":"SOMARE LUCIANA","domicilio":"Güemes 1600, X5808 Río Cuarto, Córdoba","telCen":"","telCenHref":"","telDirectora":"0358 5089076","telDirectoraHref":"03585089076","correoInst":"ipet314direccion@gmail.com","correoPersonal":""},"IPET N° 362":{"director":"SABINI MARIA BELEN","domicilio":"Pcia de la Rioja 1615, X5806HXM Río Cuarto, Córdoba","telCen":"0358 4676828","telCenHref":"03584676828","telDirectora":"0358 5099155","telDirectoraHref":"03585099155","correoInst":"ipem362jpolitano@gmail.com","correoPersonal":"mariabelensabini@gmail.com"},"IPET N° 26 \"Juan Filloy\"":{"director":"LASCANO ASTRADA M. ANDREA","domicilio":"Belisario Roldán 535, X5808 Río Cuarto, Córdoba","telCen":"","telCenHref":"","telDirectora":"0358 5041961","telDirectoraHref":"03585041961","correoInst":"ipet26gestion@gmail.com","correoPersonal":"mariaandrealascano@gmail.com"},"IPET N° 79":{"director":"MARTINO CLAUDIO","domicilio":"Leandro N. Alem 1735, X5808 Río Cuarto, Córdoba","telCen":"","telCenHref":"","telDirectora":"0358 5608325","telDirectoraHref":"03585608325","correoInst":"ipem79@yahoo.com.ar","correoPersonal":""},"I.P.E.MyT N° 203":{"director":"ALVAREZ ALEJANDRA","domicilio":"Bolívar 335, X5800 Río Cuarto, Córdoba","telCen":"0358 4672931","telCenHref":"03584672931","telDirectora":"0358 4018081","telDirectoraHref":"03584018081","correoInst":"ipem203jbd@gmail.com","correoPersonal":"alegalvarez67@gmail.com"},"Escuela Experimental TIC - Biotecnología":{"director":"VARISCO VIRGINIA","domicilio":"Roberto Payró 970, X5804 Río Cuarto, Córdoba","telCen":"0358 5093258","telCenHref":"03585093258","telDirectora":"0358 5485932","telDirectoraHref":"03585485932","correoInst":"riocuarto.ds@escuelasproa.edu.ar","correoPersonal":"vvarisco@escuelasproa.edu.ar"}};
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function tierOf(previas){
+  if (previas <= 3) return {k:'alta', label:'Alta'};
+  if (previas <= 6) return {k:'media', label:'Media'};
+  return {k:'baja', label:'Baja'};
+}
+
+// ---- Inscripción al Plan de Terminalidad: localStorage (caché local) + Google Sheets (fuente compartida) ----
+const INSCRIPTOS_KEY = 'terminalidad_inscriptos_v1';
+// Apps Script Web App que actualiza la planilla de Google Sheets (columnas "Inscripto Plan de Terminalidad" y "Fecha de marcado").
+const GSHEET_SYNC_URL = 'https://script.google.com/macros/s/AKfycbx-dCIU3urZ8ZcPHFuLuD-WbBrbFf9wxlIlwGzfN5nuOH18Kr3HTq0mjXLB47Blzl2kww/exec';
+
+function loadInscriptos(){
+  try { return JSON.parse(localStorage.getItem(INSCRIPTOS_KEY) || '{}'); }
+  catch (e) { return {}; }
+}
+function saveInscriptos(){ localStorage.setItem(INSCRIPTOS_KEY, JSON.stringify(inscriptos)); }
+let inscriptos = loadInscriptos();
+function isInscripto(dni){ return !!(inscriptos[dni] && inscriptos[dni].inscripto); }
+function setInscripto(dni, value){
+  if (value) inscriptos[dni] = { inscripto: true, fecha: new Date().toISOString(), synced: false };
+  else inscriptos[dni] = { inscripto: false, fecha: new Date().toISOString(), synced: false };
+  saveInscriptos();
+}
+
+function syncToGoogleSheet(dni, value, fecha){
+  if (!GSHEET_SYNC_URL) return;
+  const url = GSHEET_SYNC_URL + '?dni=' + encodeURIComponent(dni) + '&inscripto=' + (value ? '1' : '0') + '&fecha=' + encodeURIComponent(fecha || '');
+  fetch(url).then(r => r.json()).then(res => {
+    if (inscriptos[dni]) inscriptos[dni].synced = !!(res && res.ok);
+    saveInscriptos();
+  }).catch(() => {});
+}
+
+function buildNominaTable(escuela){
+  const alumnos = STUDENTS.filter(s => s.escuela === escuela)
+    .slice()
+    .sort((a,b) => a.previas - b.previas || a.nombre.localeCompare(b.nombre));
+
+  const headers = ['N°', 'Alumno', 'DNI', 'Previas', 'Prioridad'];
+  const dataRows = alumnos.map((s, i) => [
+    String(i + 1),
+    s.nombre,
+    s.dniRaw || s.dni,
+    String(s.previas) + (s.estimado ? '*' : ''),
+    tierOf(s.previas).label
+  ]);
+  const widths = headers.map((h, ci) => Math.max(h.length, ...dataRows.map(r => r[ci].length)));
+  const padRow = (r) => r.map((cell, ci) => cell.padEnd(widths[ci])).join('  |  ');
+  const plainTable = [padRow(headers), widths.map(w => '-'.repeat(w)).join('--+--'), ...dataRows.map(padRow)].join('\n');
+
+  const htmlTable = `<table class="cc-table"><thead><tr><th>#</th><th>Alumno</th><th>DNI</th><th>Previas</th><th>Prioridad</th></tr></thead><tbody>${
+    alumnos.map((s, i) => {
+      const t = tierOf(s.previas);
+      return `<tr><td>${i+1}</td><td>${escapeHtml(s.nombre)}</td><td>${escapeHtml(s.dniRaw || s.dni)}</td><td><span class="previas-chip tier-${t.k}">${s.previas}${s.estimado ? '*' : ''}</span></td><td>${t.label}</td></tr>`;
+    }).join('')
+  }</tbody></table>`;
+
+  return { alumnos, plainTable, htmlTable };
+}
+
+const PREINSCRIPCION_URL = 'bit.ly/terminalidad_orientada';
+const CONSULTAS_EMAIL = 'terminalidadcba.orientada@gmail.com';
+// Safe length for a mailto: body across browsers/OS mail-client handoff (Outlook/Windows
+// truncate well before the URL spec's own limit) — beyond this we copy to clipboard instead.
+const MAILTO_SAFE_LENGTH = 1800;
+
+function cierreMensaje(paraAlumno, puedeVerbo){
+  return 'La propuesta incluye acompañamiento pedagógico virtual, tutorías semanales y trayectos curriculares pensados para ayudar a' + paraAlumno + ' a alcanzar su egreso efectivo.\n\n' +
+    puedeVerbo + ' preinscribirse y dar un paso más hacia su título a través del siguiente formulario de preinscripción: ' + PREINSCRIPCION_URL + '\n\n' +
+    '📩 Consultas: ' + CONSULTAS_EMAIL + '\n\n' +
+    'Quedamos a disposición para cualquier consulta.\n\nSaludos cordiales.\n\n' +
+    'Coordinaciones Locales de Educación (CLE)\nRío Cuarto, CBA, AR';
+}
+
+function buildStudentMessage(escuela, student){
+  const c = SCHOOL_CONTACTS[escuela] || {};
+  const subject = 'Plan de Terminalidad — ' + student.nombre;
+  const body = 'Estimado/a' + (c.director ? ' ' + c.director : '') + ',\n\n' +
+    'Le escribimos desde la Coordinación Local de Educación para informarle que el/la estudiante ' + student.nombre +
+    ' (DNI ' + (student.dniRaw || student.dni) + ') tiene la posibilidad de comenzar el Plan de Terminalidad de Educación Secundaria Orientada, adeudando ' +
+    student.previas + (student.previas === 1 ? ' materia previa' : ' materias previas') +
+    (student.estimado ? ' (cantidad a confirmar)' : '') + '.\n\n' +
+    cierreMensaje('l alumno', 'Puede');
+  return { subject, body, mailTo: c.correoInst || c.correoPersonal || '' };
+}
+
+function buildSchoolMessage(escuela){
+  const c = SCHOOL_CONTACTS[escuela] || {};
+  const { alumnos, plainTable, htmlTable } = buildNominaTable(escuela);
+  const subject = 'Plan de Terminalidad — Estudiantes elegibles de ' + escuela;
+  const body = 'Estimado/a' + (c.director ? ' ' + c.director : '') + ',\n\n' +
+    'Le escribimos desde la Coordinación Local de Educación para informarle que los siguientes ' + alumnos.length +
+    ' estudiantes de ' + escuela + ' tienen la posibilidad de comenzar el Plan de Terminalidad de Educación Secundaria Orientada, ordenados de mayor a menor prioridad (menor cantidad de previas primero):\n\n' +
+    plainTable + '\n\n' +
+    (alumnos.some(s => s.estimado) ? '(*) Cantidad de previas estimada, a confirmar con la institución.\n\n' : '') +
+    cierreMensaje(' cada alumno/a', 'Pueden');
+  return { subject, body, mailTo: c.correoInst || c.correoPersonal || '', tableHtml: htmlTable, alumnosCount: alumnos.length };
+}
+
+function copyText(text){
+  if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext !== false) {
+    return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+  }
+  return Promise.resolve(fallbackCopy(text));
+}
+function fallbackCopy(text){
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.js-copy-nomina');
+  if (!btn) return;
+  e.preventDefault();
+  const escuela = btn.dataset.escuela;
+  const { subject, body, mailTo } = buildSchoolMessage(escuela);
+  const original = btn.textContent;
+  copyText(body).then((ok) => {
+    btn.textContent = ok ? '✓ Mensaje copiado — abriendo correo…' : '⚠ No se pudo copiar automáticamente';
+    setTimeout(() => {
+      if (mailTo) {
+        window.location.href = 'mailto:' + encodeURIComponent(mailTo) + '?subject=' + encodeURIComponent(subject);
+      }
+      setTimeout(() => { btn.textContent = original; }, 3500);
+    }, ok ? 250 : 0);
+  });
+});
+
+function contactCardHtml(escuela, student){
+  const c = SCHOOL_CONTACTS[escuela];
+  if (!c) {
+    return `<div class="contact-card"><div class="cc-title">${escapeHtml(escuela)}</div><div class="cc-empty">No se encontraron datos de contacto para esta escuela en el B.U.D.I.E.</div></div>`;
+  }
+
+  const msg = student ? buildStudentMessage(escuela, student) : buildSchoolMessage(escuela);
+  const { subject, body, mailTo } = msg;
+  const tableHtml = student ? '' : msg.tableHtml;
+  const bodyTooLong = body.length > MAILTO_SAFE_LENGTH;
+
+  let actionHtml;
+  if (!mailTo) {
+    actionHtml = `<span class="cc-action disabled">✉ Sin correo cargado</span>`;
+  } else if (student || !bodyTooLong) {
+    const mailHref = 'mailto:' + encodeURIComponent(mailTo) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    actionHtml = `<a class="cc-action" href="${mailHref}">✉ Avisar por correo${student ? '' : ' (nómina completa)'}</a>`;
+  } else {
+    actionHtml = `<button type="button" class="cc-action js-copy-nomina" data-escuela="${escapeHtml(escuela)}">📋 Copiar mensaje y abrir correo</button>`;
+  }
+
+  const rows = [
+    ['Director/a', c.director],
+    ['Teléfono establecimiento', c.telCen, c.telCenHref ? 'tel:' + c.telCenHref : null],
+    ['Teléfono director/a', c.telDirectora, c.telDirectoraHref ? 'tel:' + c.telDirectoraHref : null],
+    ['Correo institucional', c.correoInst, c.correoInst ? 'mailto:' + c.correoInst : null],
+    ['Correo del director/a', c.correoPersonal, c.correoPersonal ? 'mailto:' + c.correoPersonal : null],
+    ['Domicilio', c.domicilio],
+  ].filter(r => r[1]);
+
+  const gridHtml = rows.map(([label, val, href]) => `
+    <div><b>${label}</b>${href ? `<a href="${href}">${escapeHtml(val)}</a>` : escapeHtml(val)}</div>
+  `).join('');
+
+  return `<div class="contact-card">
+    <div class="cc-title">${escapeHtml(escuela)}</div>
+    <div class="cc-grid">${gridHtml || '<div class="cc-empty">Sin datos adicionales cargados en el B.U.D.I.E.</div>'}</div>
+    <div class="cc-actions">
+      ${actionHtml}
+      ${c.telDirectoraHref ? `<a class="cc-action secondary" href="tel:${c.telDirectoraHref}">☎ Llamar al director/a</a>` : (c.telCenHref ? `<a class="cc-action secondary" href="tel:${c.telCenHref}">☎ Llamar al establecimiento</a>` : '')}
+    </div>
+    ${bodyTooLong ? '<div class="cc-hint">El mensaje incluye la nómina completa y es muy largo para abrirse directamente en el correo (límite técnico de los clientes de mail). Al hacer click se copia el texto completo al portapapeles y se abre el correo con destinatario y asunto listos: solo hay que pegarlo (Ctrl+V) en el cuerpo.</div>' : ''}
+    ${tableHtml ? `<div class="cc-table-label">Nómina de alumnos incluida en el mensaje</div><div class="cc-table-wrap">${tableHtml}</div>` : ''}
+    ${body ? `<div class="cc-msg-label">Vista previa del correo</div><div class="cc-msg">${escapeHtml(body)}</div>` : ''}
+  </div>`;
+}
+
+// ---- Auth0 & Whitelist Configuration ----
+const ALLOWED_EMAILS = [
+  'fmunoz@riocuarto.gov.ar',
+  'datos@riocuarto.gov.ar',
+  'cleriocuarto@gmail.com'
+];
+
+// Valores por defecto de Auth0 (pueden ser modificados aquí o guardados en la interfaz)
+const DEFAULT_AUTH0_CONFIG = {
+  domain: '', // Ej: 'dev-xxxxxx.us.auth0.com'
+  clientId: '' // Ej: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+};
+
+const STORAGE_KEYS = {
+  DOMAIN: 'terminalidad_auth0_domain',
+  CLIENT_ID: 'terminalidad_auth0_client_id'
+};
+
+let auth0Client = null;
+
+function getStoredAuthConfig() {
+  const domain = localStorage.getItem(STORAGE_KEYS.DOMAIN) || DEFAULT_AUTH0_CONFIG.domain || '';
+  const clientId = localStorage.getItem(STORAGE_KEYS.CLIENT_ID) || DEFAULT_AUTH0_CONFIG.clientId || '';
+  return { domain, clientId };
+}
+
+function showScreen(screen) {
+  const loading = document.getElementById('loadingScreen');
+  const login = document.getElementById('loginScreen');
+  const unauth = document.getElementById('unauthorizedScreen');
+  const app = document.getElementById('dashboardApp');
+
+  if (loading) loading.style.display = (screen === 'loading') ? 'flex' : 'none';
+  if (login) login.style.display = (screen === 'login') ? 'flex' : 'none';
+  if (unauth) unauth.style.display = (screen === 'unauthorized') ? 'flex' : 'none';
+  if (app) app.style.display = (screen === 'app') ? 'block' : 'none';
+}
+
+async function createClient(domain, clientId) {
+  return await auth0.createAuth0Client({
+    domain: domain.trim(),
+    clientId: clientId.trim(),
+    authorizationParams: {
+      redirect_uri: window.location.origin + window.location.pathname
+    },
+    cacheLocation: 'localstorage',
+    useRefreshTokens: true
+  });
+}
+
+async function initAuth() {
+  const { domain, clientId } = getStoredAuthConfig();
+
+  const cfgDomainInput = document.getElementById('cfgDomain');
+  const cfgClientIdInput = document.getElementById('cfgClientId');
+  if (cfgDomainInput) cfgDomainInput.value = domain;
+  if (cfgClientIdInput) cfgClientIdInput.value = clientId;
+
+  if (!domain || !clientId) {
+    showScreen('login');
+    const box = document.getElementById('authConfigBox');
+    if (box) box.style.display = 'block';
+    return;
+  }
+
+  try {
+    auth0Client = await createClient(domain, clientId);
+
+    const query = window.location.search;
+    if (query.includes('code=') && query.includes('state=')) {
+      await auth0Client.handleRedirectCallback();
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    const isAuthenticated = await auth0Client.isAuthenticated();
+    if (isAuthenticated) {
+      const user = await auth0Client.getUser();
+      const email = (user && user.email) ? user.email.toLowerCase().trim() : '';
+
+      if (ALLOWED_EMAILS.includes(email)) {
+        // Usuario autorizado
+        document.getElementById('userEmailBadge').textContent = '👤 ' + (user.email || email);
+        showScreen('app');
+        initDashboard();
+      } else {
+        // Autenticado pero no está en la lista blanca
+        const unauthEmailEl = document.getElementById('unauthorizedUserEmail');
+        if (unauthEmailEl) unauthEmailEl.textContent = 'Cuenta conectada: ' + (user.email || email || 'Sin correo');
+        showScreen('unauthorized');
+      }
+    } else {
+      showScreen('login');
+    }
+  } catch (err) {
+    console.error('Error inicializando Auth0:', err);
+    showScreen('login');
+  }
+}
+
+async function loginWithGoogle() {
+  const { domain, clientId } = getStoredAuthConfig();
+  if (!domain || !clientId) {
+    alert('Por favor configurá y guardá el Domain y Client ID de Auth0 antes de iniciar sesión.');
+    const box = document.getElementById('authConfigBox');
+    if (box) box.style.display = 'block';
+    return;
+  }
+
+  try {
+    if (!auth0Client) {
+      auth0Client = await createClient(domain, clientId);
+    }
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        connection: 'google-oauth2',
+        prompt: 'select_account'
+      }
+    });
+  } catch (e) {
+    console.error('Error en loginWithRedirect:', e);
+    alert('Error al conectar con Auth0: ' + (e.message || e));
+  }
+}
+
+async function handleLogout() {
+  const { domain, clientId } = getStoredAuthConfig();
+  if (auth0Client) {
+    try {
+      await auth0Client.logout({
+        logoutParams: {
+          returnTo: window.location.origin + window.location.pathname
+        }
+      });
+      return;
+    } catch (e) {
+      console.warn('Error en auth0 logout:', e);
+    }
+  }
+  window.location.href = window.location.origin + window.location.pathname;
+}
+
+// Config box toggle & save events
+document.getElementById('btnToggleConfig')?.addEventListener('click', () => {
+  const box = document.getElementById('authConfigBox');
+  if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('btnSaveConfig')?.addEventListener('click', () => {
+  const domain = document.getElementById('cfgDomain').value.trim();
+  const clientId = document.getElementById('cfgClientId').value.trim();
+  localStorage.setItem(STORAGE_KEYS.DOMAIN, domain);
+  localStorage.setItem(STORAGE_KEYS.CLIENT_ID, clientId);
+  const msg = document.getElementById('cfgSavedMsg');
+  if (msg) msg.style.display = 'block';
+  setTimeout(() => { location.reload(); }, 600);
+});
+
+document.getElementById('btnLoginGoogle')?.addEventListener('click', loginWithGoogle);
+document.getElementById('btnLogoutUnauthorized')?.addEventListener('click', handleLogout);
+document.getElementById('btnLogout')?.addEventListener('click', handleLogout);
+
+let dashboardInitialized = false;
+function initDashboard(){
+  if (dashboardInitialized) return;
+  dashboardInitialized = true;
+
+  document.getElementById('genDate').textContent = 'Actualizado ' + new Date().toLocaleDateString('es-AR', {year:'numeric', month:'long', day:'numeric'});
+
+  // ---- KPIs ----
+  const total = STUDENTS.length;
+  const confirmados = STUDENTS.filter(s => !s.estimado);
+  const estimados = STUDENTS.filter(s => s.estimado);
+  const avgPrevias = (confirmados.reduce((a,s)=>a+s.previas,0) / confirmados.length);
+  const escuelas = [...new Set(STUDENTS.map(s => s.escuela))];
+  const altaPrioridad = STUDENTS.filter(s => s.previas <= 3).length;
+
+  const kpis = [
+    {label:'Total elegibles', value: total, sub: '6° año, previas pendientes'},
+    {label:'Dato confirmado', value: confirmados.length, sub: 'IPEM — cantidad real de previas'},
+    {label:'Dato estimado', value: estimados.length, sub: 'IPET — sin cantidad, se asume ' + estimados[0].previas},
+    {label:'Promedio previas', value: avgPrevias.toFixed(1), sub: 'sobre los casos confirmados'},
+    {label:'Alta prioridad', value: altaPrioridad, sub: '1–3 previas · ' + escuelas.length + ' escuelas en total'},
+  ];
+  document.getElementById('kpis').innerHTML = kpis.map(k => `
+    <div class="kpi"><div class="label">${k.label}</div><div class="value">${k.value}</div><div class="sub">${k.sub}</div></div>
+  `).join('');
+
+  // ---- School bar chart (click to expand contact) ----
+  const bySchool = {};
+  STUDENTS.forEach(s => {
+    bySchool[s.escuela] = bySchool[s.escuela] || {confirmado:0, estimado:0};
+    bySchool[s.escuela][s.estimado ? 'estimado' : 'confirmado']++;
+  });
+  const schoolRows = Object.entries(bySchool)
+    .map(([name, v]) => ({name, total: v.confirmado + v.estimado, ...v}))
+    .sort((a,b) => b.total - a.total);
+  const maxSchool = Math.max(...schoolRows.map(r => r.total));
+
+  const schoolChartEl = document.getElementById('schoolChart');
+  schoolChartEl.innerHTML = schoolRows.map((r, i) => {
+    const confW = (r.confirmado / maxSchool * 100).toFixed(1);
+    const estW = (r.estimado / maxSchool * 100).toFixed(1);
+    return `<div class="bar-row" data-idx="${i}">
+      <div class="name" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>
+      <div class="bar-track">
+        ${r.confirmado ? `<div class="bar-fill" style="width:${confW}%;background:var(--celeste)"></div>` : ''}
+        ${r.estimado ? `<div class="bar-fill" style="width:${estW}%;background:var(--naranja)"></div>` : ''}
+      </div>
+      <div class="count">${r.total}</div>
+      <div class="chev">▸</div>
+    </div>
+    <div class="school-panel" data-panel="${i}" style="display:none;"></div>`;
+  }).join('');
+
+  schoolChartEl.addEventListener('click', (e) => {
+    const row = e.target.closest('.bar-row');
+    if (!row) return;
+    const idx = row.dataset.idx;
+    const panel = schoolChartEl.querySelector('.school-panel[data-panel="' + idx + '"]');
+    const isOpen = panel.style.display !== 'none';
+    schoolChartEl.querySelectorAll('.school-panel').forEach(p => p.style.display = 'none');
+    schoolChartEl.querySelectorAll('.bar-row').forEach(r => r.classList.remove('open'));
+    if (!isOpen) {
+      panel.innerHTML = contactCardHtml(schoolRows[idx].name, null);
+      panel.style.display = 'block';
+      row.classList.add('open');
+    }
+  });
+
+  // ---- Previas histogram (confirmed only) ----
+  const counts = {};
+  confirmados.forEach(s => { counts[s.previas] = (counts[s.previas]||0) + 1; });
+  const maxPrevias = Math.max(...confirmados.map(s=>s.previas));
+  const maxCount = Math.max(...Object.values(counts));
+  let histHtml = '';
+  for (let p = 1; p <= maxPrevias; p++){
+    const c = counts[p] || 0;
+    const h = c ? Math.max(6, (c / maxCount * 110)) : 0;
+    const intensity = 0.35 + (p / maxPrevias) * 0.65;
+    histHtml += `<div class="hist-col">
+      <div class="hist-bar" style="height:${h}px;background:var(--naranja);opacity:${c? intensity.toFixed(2):0}">${c ? `<div class="val">${c}</div>` : ''}</div>
+      <div class="xlabel">${p}</div>
+    </div>`;
+  }
+  document.getElementById('histChart').innerHTML = histHtml;
+
+  // ---- Filters ----
+  const escuelaSelect = document.getElementById('fEscuela');
+  escuelaSelect.innerHTML = '<option value="">Todas las escuelas</option>';
+  escuelas.sort().forEach(e => {
+    const opt = document.createElement('option');
+    opt.value = e; opt.textContent = e;
+    escuelaSelect.appendChild(opt);
+  });
+
+  let sortKey = 'previas';
+  let sortDir = 1;
+
+  function applyFilters(){
+    const q = document.getElementById('fSearch').value.trim().toLowerCase();
+    const esc = document.getElementById('fEscuela').value;
+    const fuente = document.getElementById('fFuente').value;
+    const tier = document.getElementById('fTier').value;
+
+    const insc = document.getElementById('fInscripto').value;
+    let rows = STUDENTS.filter(s => {
+      if (q && !(s.nombre.toLowerCase().includes(q) || s.dni.includes(q))) return false;
+      if (esc && s.escuela !== esc) return false;
+      if (fuente === 'confirmado' && s.estimado) return false;
+      if (fuente === 'estimado' && !s.estimado) return false;
+      if (tier && tierOf(s.previas).k !== tier) return false;
+      if (insc === 'si' && !isInscripto(s.dni)) return false;
+      if (insc === 'no' && isInscripto(s.dni)) return false;
+      return true;
+    });
+
+    rows.sort((a,b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (sortKey === 'previas'){
+        if (av !== bv) return (av - bv) * sortDir;
+        return a.nombre.localeCompare(bv ? b.nombre : b.nombre);
+      }
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+      return String(av).localeCompare(String(bv)) * sortDir;
+    });
+
+    render(rows);
+  }
+
+  function render(rows){
+    document.getElementById('rowCount').textContent = rows.length + ' de ' + total + ' alumnos';
+    document.getElementById('emptyState').style.display = rows.length ? 'none' : 'block';
+    document.getElementById('tbody').innerHTML = rows.map((s, i) => {
+      const t = tierOf(s.previas);
+      return `<tr data-sid="${s.id}">
+        <td class="rank num">${i+1}</td>
+        <td>${escapeHtml(s.nombre)}</td>
+        <td class="num">${s.dniRaw ? escapeHtml(s.dniRaw) : '—'}</td>
+        <td class="escuela-cell">${escapeHtml(s.escuela)}${s.orientacion ? `<span class="orient">${escapeHtml(s.orientacion)}</span>` : ''}</td>
+        <td>${s.turno ? escapeHtml(s.turno) : '—'}</td>
+        <td class="num"><span class="previas-chip tier-${t.k}">${s.previas}${s.estimado ? '*' : ''}</span></td>
+        <td><span class="src-chip ${s.estimado ? 'src-estimado' : 'src-confirmado'}">${s.estimado ? 'Estimado' : 'Confirmado'}</span></td>
+        <td><button class="contact-btn" data-sid="${s.id}" type="button">Contactar</button></td>
+        <td class="chk-cell"><input type="checkbox" class="insc-check" data-dni="${s.dni}" title="Se inscribió al Plan de Terminalidad"${isInscripto(s.dni) ? ' checked' : ''}></td>
+      </tr>
+      <tr class="contact-row" data-panel-for="${s.id}" style="display:none;"><td colspan="9"></td></tr>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('thead th[data-k]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.k;
+      if (k === 'rank') return;
+      if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+      document.querySelectorAll('thead th').forEach(x => x.classList.remove('sorted'));
+      th.classList.add('sorted');
+      applyFilters();
+    });
+  });
+
+  ['fSearch','fEscuela','fFuente','fTier','fInscripto'].forEach(id => {
+    document.getElementById(id).addEventListener('input', applyFilters);
+  });
+
+  document.getElementById('tbody').addEventListener('click', (e) => {
+    const btn = e.target.closest('.contact-btn');
+    if (!btn) return;
+    const sid = btn.dataset.sid;
+    const student = STUDENTS.find(s => String(s.id) === sid);
+    const panelRow = document.querySelector('.contact-row[data-panel-for="' + sid + '"]');
+    const isOpen = panelRow.style.display !== 'none';
+    document.querySelectorAll('.contact-row').forEach(r => r.style.display = 'none');
+    document.querySelectorAll('.contact-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.contact-row td').forEach(td => td.innerHTML = '');
+    if (!isOpen) {
+      panelRow.querySelector('td').innerHTML = contactCardHtml(student.escuela, student);
+      panelRow.style.display = 'table-row';
+      btn.classList.add('active');
+      btn.textContent = 'Ocultar';
+    } else {
+      btn.textContent = 'Contactar';
+    }
+  });
+
+  document.getElementById('tbody').addEventListener('change', (e) => {
+    const chk = e.target.closest('.insc-check');
+    if (!chk) return;
+    const dni = chk.dataset.dni;
+    setInscripto(dni, chk.checked);
+    syncToGoogleSheet(dni, chk.checked, inscriptos[dni] ? inscriptos[dni].fecha : '');
+  });
+
+  // reintenta en segundo plano cualquier check que haya quedado pendiente de una sesión anterior
+  Object.keys(inscriptos).forEach(dni => {
+    if (!inscriptos[dni].synced) syncToGoogleSheet(dni, inscriptos[dni].inscripto, inscriptos[dni].fecha);
+  });
+
+  document.getElementById('notes').innerHTML = `
+    <p><b>Criterio de orden:</b> el listado se ordena por defecto de menor a mayor cantidad de materias previas — a menor cantidad, mayor prioridad y elegibilidad para el Plan de Terminalidad.</p>
+    <p><b>Dato estimado (*):</b> los ${estimados.length} alumnos del listado "Sin Egreso Efectivo 2025" no traían la cantidad de previas en el documento de origen. Se les asignó un valor por defecto de <b>${estimados[0].previas} previas</b> (promedio redondeado de los ${confirmados.length} casos confirmados de IPEM: ${avgPrevias.toFixed(2)}), marcado con "*" y chip "Estimado", para que puedan ubicarse en el ranking sin ser tratados como mejor o peor caso que el resto hasta confirmar el dato real.</p>
+    <p><b>Prioridad:</b> Alta = 1 a 3 previas · Media = 4 a 6 · Baja = 7 o más.</p>
+    <p><b>Contacto por escuela:</b> los datos de director/a, teléfonos, correos y domicilio provienen de la Base Única de Datos de Instituciones Educativas (B.U.D.I.E.). Al abrir el contacto de un alumno se genera un correo prellenado avisando a la escuela que ese estudiante puede comenzar el Plan de Terminalidad; verificá el dato antes de enviarlo, ya que puede haber cambiado desde la carga del B.U.D.I.E.</p>
+    <p><b>Advertencias de calidad de datos detectadas en el documento de origen (IPET):</b> un alumno figura documentado con pasaporte en lugar de DNI (IPET N° 259); dos alumnos de IPET N° 79 comparten el mismo número de documento (46889007) — probable error de tipeo en el listado original; un DNI de 7 dígitos (4791186, IPET N° 203) parece incompleto. Se recomienda verificar estos casos contra el registro escolar antes de contactar a las familias.</p>
+    <p><b>Check "Inscripto":</b> marca si el/la alumno/a se anotó definitivamente al Plan de Terminalidad. Se guarda al instante en este navegador y actualiza automáticamente la fila de ese alumno (columnas "Inscripto Plan de Terminalidad" y "Fecha de marcado") en la planilla de Google Sheets compartida.</p>
+  `;
+
+  applyFilters();
+}
+
+// Iniciar proceso de autenticación al cargar
+initAuth();
+</script>
+</body>
+</html>

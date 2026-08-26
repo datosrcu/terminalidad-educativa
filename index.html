@@ -714,10 +714,10 @@ const ALLOWED_EMAILS = [
   'cleriocuarto@gmail.com'
 ];
 
-// Valores por defecto de Auth0 (pueden ser modificados aquí o guardados en la interfaz)
+// Valores por defecto de Auth0 oficiales del tenant
 const DEFAULT_AUTH0_CONFIG = {
-  domain: '', // Ej: 'dev-xxxxxx.us.auth0.com'
-  clientId: '' // Ej: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+  domain: 'dev-nrb0zrv8mrh50bzv.us.auth0.com',
+  clientId: 'bPcnAXh72rP6BKoBNjbeFG6K6NzcmSLO'
 };
 
 const STORAGE_KEYS = {
@@ -776,6 +776,17 @@ async function initAuth() {
     auth0Client = await createClient(domain, clientId);
 
     const query = window.location.search;
+
+    // Manejar errores devueltos por Auth0 en redirect
+    if (query.includes('error=')) {
+      const params = new URLSearchParams(query);
+      console.error('Error de Auth0:', params.get('error'), params.get('error_description'));
+      window.history.replaceState({}, document.title, window.location.pathname);
+      showScreen('login');
+      return;
+    }
+
+    // Manejar callback exitoso tras redirect
     if (query.includes('code=') && query.includes('state=')) {
       await auth0Client.handleRedirectCallback();
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -787,7 +798,7 @@ async function initAuth() {
       const email = (user && user.email) ? user.email.toLowerCase().trim() : '';
 
       if (ALLOWED_EMAILS.includes(email)) {
-        // Usuario autorizado
+        // Usuario autorizado en lista blanca
         document.getElementById('userEmailBadge').textContent = '👤 ' + (user.email || email);
         showScreen('app');
         initDashboard();
